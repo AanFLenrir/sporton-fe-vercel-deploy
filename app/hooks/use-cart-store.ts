@@ -1,12 +1,6 @@
-"use client";
-
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Product } from "../types";
-
-/* =========================
-   TYPES
-========================= */
 
 export interface CartItem extends Product {
   qty: number;
@@ -27,58 +21,37 @@ interface CartStore {
   reset: () => void;
 }
 
-/* =========================
-   STORE
-========================= */
-
 export const useCartStore = create<CartStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       customerInfo: null,
       items: [],
-
       setCustomerInfo: (info) => {
         set({ customerInfo: info });
       },
-
       addItem: (product, qty = 1) => {
-        set((state) => {
-          const existingItem = state.items.find(
-            (item) => item._id === product._id
-          );
+        const items = get().items;
+        const existingItem = items.find((item) => item._id === product._id);
 
-          if (existingItem) {
-            return {
-              items: state.items.map((item) =>
-                item._id === product._id
-                  ? { ...item, qty: item.qty + qty }
-                  : item
-              ),
-            };
-          }
-
-          return {
-            items: [...state.items, { ...product, qty }],
-          };
-        });
+        if (existingItem) {
+          set({
+            items: items.map((item) =>
+              item._id === product._id ? { ...item, qty: item.qty + qty } : item
+            ),
+          });
+        } else {
+          set({ items: [...items, { ...product, qty }] });
+        }
       },
-
       removeItem: (productId) => {
-        set((state) => ({
-          items: state.items.filter((item) => item._id !== productId),
-        }));
+        set({ items: get().items.filter((item) => item._id !== productId) });
       },
-
       reset: () => {
-        set({
-          items: [],
-          customerInfo: null,
-        });
+        set({ items: [], customerInfo: null });
       },
     }),
     {
       name: "cart-storage",
-      skipHydration: true, // penting untuk Next.js
     }
   )
 );
