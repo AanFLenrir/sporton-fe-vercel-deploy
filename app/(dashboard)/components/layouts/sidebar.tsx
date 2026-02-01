@@ -66,7 +66,7 @@ const Sidebar = () => {
       </div>
       <Link
         href="#"
-        className="flex gap-3 font-medium py-3 px-4.5 mx-5 hover:bg-gray-100 duration-300 rounded-lg mt-auto mb-10 cursor-pointer"
+        className="flex gap-3 font-medium py-3 px-4.5 mx-5 hover:bg-gray-100 duration-300 rounded-lg mt-auto mb-10"
       >
         <FiLogOut size={24} />
         Log Out

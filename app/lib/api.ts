@@ -1,30 +1,35 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-
-if (!API_URL) {
-  throw new Error("NEXT_PUBLIC_API_URL belum diset di .env.local");
-}
-
 export async function fetchAPI<T>(
   endpoint: string,
-  options?: RequestInit
+  options?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}${endpoint}`, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options?.headers || {}),
-    },
-    cache: "no-store",
+    cache: options?.cache || "no-store", // kita set no-store karena kita ingin mendapat data lebih real time atau lebih updated
   });
 
   if (!res.ok) {
-    throw new Error(`Fetch error ${res.status}`);
+    let errorMessage = `Failed to fetch data from ${endpoint}`;
+    try {
+      const errorData = await res.json();
+      errorMessage = errorData.message || errorData.error || errorMessage;
+    } catch (e) {
+      console.log(e);
+    }
+
+    throw new Error(errorMessage);
   }
 
   return res.json();
 }
 
-export function getImageUrl(path?: string | null) {
-  if (!path) return "/placeholder.png";
-  return `${API_URL}/storage/${path}`;
+export function getImageUrl(path: string) {
+  if (path.startsWith("http")) return path; // artinya url nya sudah valid
+  return `${process.env.NEXT_PUBLIC_API_ROOT}/${path}`;
+}
+
+export function getAuthHeaders() {
+  const token = localStorage.getItem("token");
+  return {
+    Authorization: `Bearer ${token}`,
+  };
 }
